@@ -1,0 +1,64 @@
+---
+title: "Output File Framework for R Markdown ETL on RStudio Connect"
+output: html_document
+rmd_output_metadata:
+  rsc_output_files:
+    - "data.csv"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+A common use case for [Scheduling on RStudio Connect](https://docs.rstudio.com/connect/user/r-markdown-schedule.html), is to use that feature as part of an R-based process to automate scheduled data updates. This example report outputs a CSV file that can be used/consumed by other assets hosted on RStudio Connect.
+
+## R Markdown Output Metadata and Output Files
+
+- [User Guide Reference](https://docs.rstudio.com/connect/user/r-markdown.html#r-markdown-output-files)
+
+The purpose of this R Markdown document is to make an output data file (updated on a schedule) available over HTTP on my RStudio Connect server.
+
+### Extract/Transform Data
+
+```{r}
+df <- data.frame(a=rnorm(50), b=rnorm(50), c=rnorm(50), d=rnorm(50), e=rnorm(50))
+```
+
+Every time this report is executed, it creates a new random data frame. _Creating dummy data is not representative of a typical ETL process._ You'll likely want to replace this section with code that pulls data from a database or API.
+
+- Best practices for working with databases can be found at [db.rstudio.com](https://db.rstudio.com/)
+- The `httr` package is a [good place to start](https://cran.r-project.org/web/packages/httr/vignettes/quickstart.html) when working with REST APIs and the http protocol
+
+### Show a nice table preview (optional)
+
+```{r message=FALSE, warning=FALSE}
+library(gt)
+library(dplyr)
+
+df %>%
+  sample_n(6) %>%
+  gt() %>%
+  tab_header(
+    title = "Current Data Sample"
+  )
+```
+
+### Write data (CSV file) Important!
+
+```{r}
+write.csv(df, "data.csv", row.names=FALSE)
+```
+
+This is the step that creates the data.csv output file. There are two ways to specify output files:
+
+- List file names in the R Markdown YAML header under `rmd_output_metadata` and `rsc_output_files` _(done above)_
+- List the output files from within the R code chunk
+
+Reference: [How to work with output files](https://docs.rstudio.com/connect/user/r-markdown.html#how-to-work-with-output-files)
+
+---
+
+### Download data 
+
+#### Here is the data generated from this report: [data.csv](data.csv)
+
